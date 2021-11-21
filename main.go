@@ -32,19 +32,17 @@ type Page interface {
 
 // page holds a webpage
 type page struct {
-	url string // to solve a problem with relative links on web-page
 	doc *goquery.Document
 }
 
 // NewPage reads web-page's body
-func NewPage(raw io.Reader, url string) (*page, error) {
+func NewPage(raw io.Reader) (*page, error) {
 	doc, err := goquery.NewDocumentFromReader(raw)
 	if err != nil {
 		return nil, err
 	}
 	return &page{
 		doc: doc,
-		url: url,
 	}, nil
 }
 
@@ -99,7 +97,7 @@ func (r requester) Get(ctx context.Context, url string) (Page, error) {
 			return nil, err
 		}
 		defer body.Body.Close()
-		page, err := NewPage(body.Body, url)
+		page, err := NewPage(body.Body)
 		if err != nil {
 			return nil, err
 		}
