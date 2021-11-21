@@ -58,19 +58,10 @@ func (p *page) GetLinks() []string {
 	var urls []string
 	p.doc.Find("a").Each(func(_ int, s *goquery.Selection) {
 		url, ok := s.Attr("href")
-		prefix := "http"
 		if ok {
-			// a relative link
-			if !strings.HasPrefix(url, prefix) && len(url) > 2 {
-				if url[:2] == "//" {
-					// add 'http' prefix to the link with '//' at the begining
-					url = "http:" + url
-				} else if url[:1] == "/" {
-					// add page's url to the link with '/' at the begining
-					url = p.url + url
-				} else {
-					return
-				}
+			// link validation
+			if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+				return
 			}
 			urls = append(urls, url)
 		}
