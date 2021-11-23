@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -55,13 +55,17 @@ func (p *page) GetTitle() string {
 func (p *page) GetLinks() []string {
 	var urls []string
 	p.doc.Find("a").Each(func(_ int, s *goquery.Selection) {
-		url, ok := s.Attr("href")
+		link, ok := s.Attr("href")
 		if ok {
 			// link validation
-			if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			parsedLink, err := url.Parse(link)
+			if err != nil {
 				return
 			}
-			urls = append(urls, url)
+			if parsedLink.IsAbs() {
+				return
+			}
+			urls = append(urls, link)
 		}
 	})
 	return urls
@@ -73,10 +77,14 @@ type Requester interface {
 
 type requester struct {
 	timeout time.Duration
+	tran    http.RoundTripper
 }
 
-func NewRequester(timeout time.Duration) requester {
-	return requester{timeout: timeout}
+func NewRequester(timeout time.Duration, tran http.RoundTripper) requester {
+	return requester{
+		timeout: timeout,
+		tran:    tran,
+	}
 }
 
 // Get searches and returns a webpage on a given URL
@@ -86,7 +94,8 @@ func (r requester) Get(ctx context.Context, url string) (Page, error) {
 		return nil, nil
 	default:
 		cl := &http.Client{
-			Timeout: r.timeout,
+			Timeout:   r.timeout,
+			Transport: r.tran,
 		}
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -217,7 +226,7 @@ func main() {
 	var cr Crawler
 	var r Requester
 
-	r = NewRequester(time.Duration(cfg.ReqTimeout) * time.Second)
+	r = NewRequester(time.Duration(cfg.ReqTimeout)*time.Second, nil)
 	cr = NewCrawler(r, cfg.MaxDepth)
 	log.Printf("Crawler started with PID: %d", os.Getpid())
 
