@@ -1,6 +1,6 @@
 .PHONY: run
-build:
-	go run main.go
+run:
+	go run ./main.go
 
 .PHONY: test
 test:
