@@ -8,15 +8,51 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
+var testWebPage = `<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>TestDocument</title>
+	</head>
+	<body>
+		<p><a href="http://google.com/one">ONE</a></p>
+		<p><a href="http://yandex.com/two">TWO</a></p>
+		<p><a href="http://yahoo.com/three">THREE</a></p>
+		<p><a href="http://rambler.com/four">FOUR</a></p>
+		<p><a href="http://bing.com/five">FIVE</a></p>
+	</body>
+</html>`
+
 func TestPageGetTitle(t *testing.T) {
-	t.Skip()
+
+	testPage, _ := NewPage(strings.NewReader(testWebPage))
+	got := testPage.GetTitle()
+	want := "TestDocument"
+	if got != want {
+		t.Errorf("titles not equal: got %s, want %s", got, want)
+	}
+	t.Log("page.GetTitle() - OK ")
 }
 
 func TestPageGetLinks(t *testing.T) {
-	t.Skip()
+	testPage, _ := NewPage(strings.NewReader(testWebPage))
+	got := testPage.GetLinks()
+	want := []string{
+		"http://google.com/one",
+		"http://yandex.com/two",
+		"http://yahoo.com/three",
+		"http://rambler.com/four",
+		"http://bing.com/five",
+	}
+	assert.Equal(t, want, got)
+	t.Log("page.GetLinks() - OK ")
 }
+
 func TestRequesterGet(t *testing.T) {
 	t.Skip()
 }
