@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -62,8 +63,11 @@ func (p *page) GetLinks() []string {
 			if err != nil {
 				return
 			}
-			if parsedLink.IsAbs() {
-				return
+			if !parsedLink.IsAbs() {
+				if !strings.HasPrefix(link, "//") {
+					return
+				}
+				link = "http:" + link
 			}
 			urls = append(urls, link)
 		}
