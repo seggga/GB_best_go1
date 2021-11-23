@@ -6,4 +6,4 @@ build:
 test:
 	go test -v ./...
 	
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := run
