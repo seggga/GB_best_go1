@@ -128,24 +128,20 @@ type Crawler interface {
 
 // crawler is a main structure that has all the items to control whole process
 type crawler struct {
-	r          Requester           // a thing that queries pages
-	res        chan CrawlResult    // a channel to pass results from r
-	visited    map[string]struct{} // a map to hold visited URLs
-	mu         sync.RWMutex        // a mutex to share "visited"-map between multibple go-routines
-	maxDepth   uint64              // limits scanning depth
-	maxErrors  int
-	maxResults int
+	r        Requester           // a thing that queries pages
+	res      chan CrawlResult    // a channel to pass results from r
+	visited  map[string]struct{} // a map to hold visited URLs
+	mu       sync.RWMutex        // a mutex to share "visited"-map between multibple go-routines
+	maxDepth uint64              // limits scanning depth
 }
 
-func NewCrawler(r Requester, cfg Config) *crawler {
+func NewCrawler(r Requester, maxDepth uint64) *crawler {
 	return &crawler{
-		r:          r,
-		res:        make(chan CrawlResult),
-		visited:    make(map[string]struct{}),
-		mu:         sync.RWMutex{},
-		maxDepth:   cfg.MaxDepth,
-		maxErrors:  cfg.MaxErrors,
-		maxResults: cfg.MaxResults,
+		r:        r,
+		res:      make(chan CrawlResult),
+		visited:  make(map[string]struct{}),
+		mu:       sync.RWMutex{},
+		maxDepth: maxDepth,
 	}
 }
 
@@ -235,7 +231,7 @@ func main() {
 	var r Requester
 
 	r = NewRequester(time.Duration(cfg.ReqTimeout)*time.Second, nil)
-	cr = NewCrawler(r, *cfg)
+	cr = NewCrawler(r, cfg.MaxDepth)
 	log.Printf("Crawler started with PID: %d", os.Getpid())
 
 	ctx, cancel := context.WithCancel(context.Background())
