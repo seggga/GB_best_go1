@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 )
@@ -33,8 +30,12 @@ func (s roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
 func TestCrawlerScan(t *testing.T) {
 
 	want := []string{
-		"",
-		"",
+		"url: https://telegram.org Title: TestDocument",
+		"url: http://google.com/one Title: TestDocument",
+		"url: http://yandex.com/two Title: TestDocument",
+		"url: http://yahoo.com/three Title: TestDocument",
+		"url: http://rambler.com/four Title: TestDocument",
+		"url: http://bing.com/five Title: TestDocument",
 	}
 
 	requester := NewRequester(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
@@ -59,48 +60,37 @@ func TestCrawlerScan(t *testing.T) {
 			Body:       ioutil.NopCloser(strings.NewReader(testWebPage)),
 		}, nil
 	}))
-
-	crawler := NewCrawler(requester, 1)
-	ctx, cancel := context.WithCancel(context.Background())
-
-	go crawler.Scan(ctx, "http://google.com", 1)
-	go watchDog(cancel, 30*time.Second, t)
-	got := mockProcessResult(ctx, cancel, crawler)
-
-	t.Logf("%+v", got)
-	if len(want) != len(got) {
-		t.Errorf("slice with different length: got %d, want %d", len(got), len(want))
+	startURL := "https://telegram.org"
+	cfg := Config{
+		MaxDepth:     2,
+		MaxResults:   20,
+		MaxErrors:    20,
+		Url:          startURL,
+		ReqTimeout:   5,
+		CrawlTimeout: 5,
 	}
+	crawler := NewCrawler(requester, cfg)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-}
-
-func mockProcessResult(ctx context.Context, cancel func(), cr Crawler) []string {
-	// var maxResult, maxErrors = cfg.MaxResults, cfg.MaxErrors
+	go crawler.Scan(ctx, startURL, 1)
 	var res []string
-	for {
+	var next = true
+	for next {
 		select {
-		case <-ctx.Done():
-			// context has been closed
-			return res
-
-		case msg := <-cr.ChanResult():
-			// got message in the channel
+		case <-time.After(time.Duration(cfg.CrawlTimeout) * time.Second):
+			// stop test on timeout
+			t.Logf("read results stopped on timeout %d sec", cfg.CrawlTimeout)
+			next = false
+		case msg := <-crawler.ChanResult():
+			// got result in the channel
+			fmt.Printf("%+v", msg)
 			res = append(res, fmt.Sprintf("url: %s, title: %s", msg.Url, msg.Title))
 		}
 	}
-}
 
-func watchDog(cancel context.CancelFunc, dur time.Duration, t *testing.T) {
-
-	sigInt := make(chan os.Signal)        //Создаем канал для приема сигналов
-	signal.Notify(sigInt, syscall.SIGINT) //Подписываемся на сигнал SIGINT
-
-	select {
-	case <-time.After(dur):
-		t.Log("context has been closed on timeout")
-		cancel()
-	case <-sigInt:
-		t.Log("context has been closed on interrupt signal")
-		cancel() //Если пришёл сигнал SigInt - завершаем контекст
+	t.Logf("%+v", res)
+	if len(want) != len(res) {
+		t.Errorf("slice with different length: got %d, want %d", len(res), len(want))
 	}
 }
