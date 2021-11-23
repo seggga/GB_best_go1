@@ -125,7 +125,7 @@ func TestCrawlerScan(t *testing.T) {
 		}, nil
 	}))
 
-	crawler := NewCrawler(requester, cfg)
+	crawler := NewCrawler(requester, cfg.MaxDepth)
 	ctx := context.Background()
 
 	go crawler.Scan(ctx, startURL, 1)
