@@ -1,4 +1,10 @@
-# practice
-tasks in course "Golang - best practice"
-# task 3
+# Serg Kotovsky
+practice tasks in course "Golang - best practice"
+# задание
 Добавить тесты на имплементации интерфейсов
+
+В тестируемом коде внес изменения:
+1) структура `requester` - добавил элемент `trans: RoundTripper` для конфигурации `http.Client` в тестах (в проде `nil`)
+
+При решении использовал статическую веб-страницу `testWebPage`, которую возвращал для `http.Client`, указав ее в `RoundTrip`.
+Результаты работы методов сравниваются с элементами и производными тестовой вэб-страницы. 
