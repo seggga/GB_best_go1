@@ -4,6 +4,16 @@ import (
 	"context"
 )
 
+// Config is a structure to setup the application
+type Config struct {
+	MaxDepth     uint64 `yaml:"maxdepth"`
+	MaxResults   int    `yaml:"maxresults"`
+	MaxErrors    int    `yaml:"maxerrors"`
+	URL          string `yaml:"url"`
+	ReqTimeout   int    `yaml:"reqtimeout"`
+	CrawlTimeout int    `yaml:"crawltimeout"`
+}
+
 // CrawlResult is a structure that represents certain status on given page
 type CrawlResult struct {
 	Err   error

@@ -14,34 +14,8 @@ import (
 	"github.com/seggga/gb_best_go1/internal/crawler"
 	"github.com/seggga/gb_best_go1/internal/domain"
 	"github.com/seggga/gb_best_go1/internal/requester"
+	"github.com/seggga/gb_best_go1/internal/service"
 )
-
-//Config - структура для конфигурации
-type Config struct {
-	MaxDepth     uint64 `yaml:"maxdepth"`
-	MaxResults   int    `yaml:"maxresults"`
-	MaxErrors    int    `yaml:"maxerrors"`
-	Url          string `yaml:"url"`
-	ReqTimeout   int    `yaml:"reqtimeout"`
-	CrawlTimeout int    `yaml:"crawltimeout"`
-}
-
-// ReadConfig implements filling config from yaml-file
-func ReadConfig() (*Config, error) {
-	// read config file
-	configData, err := ioutil.ReadFile("config.yaml")
-	if err != nil {
-		return nil, err
-	}
-
-	// decode config
-	cfg := new(Config)
-	err = yaml.Unmarshal(configData, cfg)
-	if err != nil {
-		return nil, err
-	}
-	return cfg, nil
-}
 
 func main() {
 	// read config file
@@ -51,13 +25,25 @@ func main() {
 		return
 	}
 
-	r := requester.NewRequester(time.Duration(cfg.ReqTimeout)*time.Second, nil)
-	cr := crawler.NewCrawler(r, cfg.MaxDepth)
+	r, err := requester.NewRequester(cfg.ReqTimeout, nil)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	cr, err := crawler.NewCrawler(r, cfg.MaxDepth)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	srv, err := service.NewService(*cfg, cr, cancel, ctx)
+	if err != nil {
+		log.Printf("error starting service, %v", err)
+		return
+	}
 	log.Printf("Crawler started with PID: %d", os.Getpid())
 
-	ctx, cancel := context.WithCancel(context.Background())
-	go cr.Scan(ctx, cfg.Url, 1)             //Запускаем краулер в отдельной рутине
-	go processResult(ctx, cancel, cr, *cfg) //Обрабатываем результаты в отдельной рутине
+	srv.Run()
 
 	sigInt := make(chan os.Signal)        //Создаем канал для приема сигналов
 	signal.Notify(sigInt, syscall.SIGINT) //Подписываемся на сигнал SIGINT
@@ -65,10 +51,11 @@ func main() {
 	sigUsr := make(chan os.Signal)         //Создаем канал для приема сигналов
 	signal.Notify(sigUsr, syscall.SIGUSR1) //Подписываемся на сигнал SIGUSR1
 
-	for {
+	var next = true
+	for next {
 		select {
 		case <-ctx.Done(): //Если всё завершили - выходим
-			return
+			next = false
 
 		// got INT signal
 		case <-sigInt:
@@ -83,39 +70,25 @@ func main() {
 		// add 2 to max depth
 		case <-sigUsr:
 			log.Println("got USR1 signal")
-			cr.IncreaseDepth() // sigUsr1 - increase maxDepth
+			srv.IncreaseDepth() // sigUsr1 - increase maxDepth
 		}
 	}
+	log.Println("program exit")
 }
 
-func processResult(ctx context.Context, cancel func(), cr domain.Crawler, cfg Config) {
-	var maxResult, maxErrors = cfg.MaxResults, cfg.MaxErrors
-	for {
-		select {
-		case <-ctx.Done():
-			return
-
-		// got message in the channel
-		case msg := <-cr.ChanResult():
-			if msg.Err != nil {
-				// message contains error
-				maxErrors--
-				log.Printf("crawler result return err: %s\n", msg.Err.Error())
-				if maxErrors <= 0 {
-					log.Println("Maximum number of errors occured.")
-					cancel()
-					return
-				}
-			} else {
-				// message contains data
-				maxResult--
-				log.Printf("crawler result: [url: %s] Title: %s\n", msg.Url, msg.Title)
-				if maxResult <= 0 {
-					log.Println("Maximum number of results obtained.")
-					cancel()
-					return
-				}
-			}
-		}
+// ReadConfig implements filling config from yaml-file
+func ReadConfig() (*domain.Config, error) {
+	// read config file
+	configData, err := ioutil.ReadFile("config.yaml")
+	if err != nil {
+		return nil, err
 	}
+
+	// decode config
+	cfg := new(domain.Config)
+	err = yaml.Unmarshal(configData, cfg)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
 }

@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -19,14 +20,17 @@ type crawler struct {
 }
 
 // NewCrawler creates a new crawler structure
-func NewCrawler(r domain.Requester, maxDepth uint64) *crawler {
+func NewCrawler(r domain.Requester, maxDepth uint64) (*crawler, error) {
+	if maxDepth < 1 {
+		return nil, fmt.Errorf("error creating crawler, invalid maxDepth, %d", maxDepth)
+	}
 	return &crawler{
 		r:        r,
 		res:      make(chan domain.CrawlResult),
 		visited:  make(map[string]struct{}),
 		mu:       sync.RWMutex{},
 		maxDepth: maxDepth,
-	}
+	}, nil
 }
 
 // Scan fills crawler's map with visited URLs and calls Get-method to scan webpages

@@ -2,6 +2,7 @@ package requester
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,11 +15,15 @@ type requester struct {
 	tran    http.RoundTripper
 }
 
-func NewRequester(timeout time.Duration, tran http.RoundTripper) requester {
-	return requester{
-		timeout: timeout,
-		tran:    tran,
+func NewRequester(timeout int, tran http.RoundTripper) (*requester, error) {
+	if timeout <= 0 {
+		return nil, fmt.Errorf("cannot create requester, timeout is not valid, %d", timeout)
 	}
+
+	return &requester{
+		timeout: time.Duration(timeout) * time.Second,
+		tran:    tran,
+	}, nil
 }
 
 // Get searches and returns a webpage on a given URL
