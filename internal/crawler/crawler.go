@@ -5,8 +5,6 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
-
-	"github.com/seggga/GB_best_go1/internal/requester"
 )
 
 // CrawlResult is a structure that represents certain status on given page

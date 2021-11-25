@@ -1,4 +1,4 @@
-module lesson1
+module github.com/seggga/gb_best_go1
 
 go 1.17
 

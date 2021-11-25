@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"io/ioutil"
-	"lesson1/internal/requester"
 	"log"
 	"os"
 	"os/signal"
@@ -13,6 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/seggga/GB_best_go1/internal/crawler"
+	"github.com/seggga/GB_best_go1/internal/requester"
 )
 
 //Config - структура для конфигурации
@@ -50,11 +50,8 @@ func main() {
 		return
 	}
 
-	var cr Crawler
-	var r Requester
-
-	r = requester.NewRequester(time.Duration(cfg.ReqTimeout)*time.Second, nil)
-	cr = crawler.NewCrawler(r, cfg.MaxDepth)
+	r := requester.NewRequester(time.Duration(cfg.ReqTimeout)*time.Second, nil)
+	cr := crawler.NewCrawler(r, cfg.MaxDepth)
 	log.Printf("Crawler started with PID: %d", os.Getpid())
 
 	ctx, cancel := context.WithCancel(context.Background())
