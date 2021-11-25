@@ -79,7 +79,7 @@ func main() {
 // ReadConfig implements filling config from yaml-file
 func ReadConfig() (*domain.Config, error) {
 	// read config file
-	configData, err := ioutil.ReadFile("config.yaml")
+	configData, err := ioutil.ReadFile("./configs/config.yaml")
 	if err != nil {
 		return nil, err
 	}
