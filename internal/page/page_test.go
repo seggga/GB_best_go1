@@ -4,23 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/seggga/gb_best_go1/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
 	// a URL to start test with
 	startURL = "https://telegram.org"
-
-	// application config
-	cfg = domain.Config{
-		MaxDepth:     2,
-		MaxResults:   20,
-		MaxErrors:    20,
-		Url:          startURL,
-		ReqTimeout:   5,
-		CrawlTimeout: 5,
-	}
 
 	// test webpage to parse and use in http.RoundTripper
 	testWebPage = `<!DOCTYPE html>

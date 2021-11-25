@@ -21,7 +21,7 @@ var (
 	// application config
 	cfg = domain.Config{
 		MaxDepth:     2,
-		Url:          startURL,
+		URL:          startURL,
 		ReqTimeout:   5,
 		CrawlTimeout: 5,
 	}
@@ -62,14 +62,14 @@ func TestCrawlerScan(t *testing.T) {
 		"url: http://bing.com/five, title: TestDocument",
 	}
 	// requester uses test http.Client with RoundTrip function
-	requester := requester.NewRequester(time.Second, roundTripFunc(func(r *http.Request) (*http.Response, error) {
+	requester, _ := requester.NewRequester(1, roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(strings.NewReader(testWebPage)),
 		}, nil
 	}))
 
-	crawler := NewCrawler(requester, cfg.MaxDepth)
+	crawler, _ := NewCrawler(requester, cfg.MaxDepth)
 	ctx := context.Background()
 
 	go crawler.Scan(ctx, startURL, 1)
@@ -133,7 +133,7 @@ func TestMockCrawlerScan(t *testing.T) {
 	}
 	// requester uses test http.Client with RoundTrip function
 	requester := new(mockRequester)
-	crawler := NewCrawler(requester, cfg.MaxDepth)
+	crawler, _ := NewCrawler(requester, cfg.MaxDepth)
 	ctx := context.Background()
 
 	go crawler.Scan(ctx, startURL, 1)
