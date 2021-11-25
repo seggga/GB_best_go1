@@ -14,6 +14,7 @@ type Service struct {
 	cancel  context.CancelFunc
 }
 
+// NewService creates a structure Service
 func NewService(cfg domain.Config, cr domain.Crawler, cancel context.CancelFunc, ctx context.Context) (*Service, error) {
 
 	// TODO - validate config
