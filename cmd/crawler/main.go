@@ -11,8 +11,9 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/seggga/GB_best_go1/internal/crawler"
-	"github.com/seggga/GB_best_go1/internal/requester"
+	"github.com/seggga/gb_best_go1/internal/crawler"
+	"github.com/seggga/gb_best_go1/internal/domain"
+	"github.com/seggga/gb_best_go1/internal/requester"
 )
 
 //Config - структура для конфигурации
@@ -87,7 +88,7 @@ func main() {
 	}
 }
 
-func processResult(ctx context.Context, cancel func(), cr Crawler, cfg Config) {
+func processResult(ctx context.Context, cancel func(), cr domain.Crawler, cfg Config) {
 	var maxResult, maxErrors = cfg.MaxResults, cfg.MaxErrors
 	for {
 		select {
