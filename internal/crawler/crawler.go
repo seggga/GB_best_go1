@@ -5,28 +5,24 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+
+	"github.com/seggga/gb_best_go1/internal/domain"
 )
 
-// CrawlResult is a structure that represents certain status on given page
-type CrawlResult struct {
-	Err   error
-	Title string
-	Url   string
-}
-
-// crawler is a main structure that has all the items to control whole process
+// crawler is a structure that has all the items to control whole process
 type crawler struct {
-	r        requester.Requester // a thing that queries pages
-	res      chan CrawlResult    // a channel to pass results from r
-	visited  map[string]struct{} // a map to hold visited URLs
-	mu       sync.RWMutex        // a mutex to share "visited"-map between multibple go-routines
-	maxDepth uint64              // limits scanning depth
+	r        domain.Requester        // a thing that queries pages
+	res      chan domain.CrawlResult // a channel to pass results from r
+	visited  map[string]struct{}     // a map to hold visited URLs
+	mu       sync.RWMutex            // a mutex to share "visited"-map between multibple go-routines
+	maxDepth uint64                  // limits scanning depth
 }
 
-func NewCrawler(r requester.Requester, maxDepth uint64) *crawler {
+// NewCrawler creates a new crawler structure
+func NewCrawler(r domain.Requester, maxDepth uint64) *crawler {
 	return &crawler{
 		r:        r,
-		res:      make(chan CrawlResult),
+		res:      make(chan domain.CrawlResult),
 		visited:  make(map[string]struct{}),
 		mu:       sync.RWMutex{},
 		maxDepth: maxDepth,
@@ -54,13 +50,13 @@ func (c *crawler) Scan(ctx context.Context, url string, depth uint64) {
 	default:
 		page, err := c.r.Get(ctx, url) //Запрашиваем страницу через Requester
 		if err != nil {
-			c.res <- CrawlResult{Err: err} //Записываем ошибку в канал
+			c.res <- domain.CrawlResult{Err: err} //Записываем ошибку в канал
 			return
 		}
 		c.mu.Lock()
 		c.visited[url] = struct{}{} //Помечаем страницу просмотренной
 		c.mu.Unlock()
-		c.res <- CrawlResult{ //Отправляем результаты в канал
+		c.res <- domain.CrawlResult{ //Отправляем результаты в канал
 			Title: page.GetTitle(),
 			Url:   url,
 		}
@@ -70,7 +66,7 @@ func (c *crawler) Scan(ctx context.Context, url string, depth uint64) {
 	}
 }
 
-func (c *crawler) ChanResult() <-chan CrawlResult {
+func (c *crawler) ChanResult() <-chan domain.CrawlResult {
 	return c.res
 }
 
