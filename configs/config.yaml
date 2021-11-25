@@ -8,8 +8,8 @@
 # 'crawltimeout' - is a total timeout (in sec) for the application
 
 maxdepth:     3
-maxresults:   100
-maxerrors:    500
+maxresults:   30
+maxerrors:    10
 url:          "https://telegram.org"
 reqtimeout:   5
 crawltimeout: 15
