@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/seggga/GB_best_go1/internal/page"
+	"github.com/seggga/gb_best_go1/internal/domain"
+	"github.com/seggga/gb_best_go1/internal/page"
 )
 
 type requester struct {
@@ -21,7 +22,7 @@ func NewRequester(timeout time.Duration, tran http.RoundTripper) requester {
 }
 
 // Get searches and returns a webpage on a given URL
-func (r requester) Get(ctx context.Context, url string) (page.Page, error) {
+func (r requester) Get(ctx context.Context, url string) (domain.Page, error) {
 	select {
 	case <-ctx.Done():
 		return nil, nil
