@@ -2,8 +2,14 @@ package domain
 
 import (
 	"context"
-	"lesson1/internal/crawler"
 )
+
+// CrawlResult is a structure that represents certain status on given page
+type CrawlResult struct {
+	Err   error
+	Title string
+	Url   string
+}
 
 // Page represents a parsed web-page
 type Page interface {
@@ -19,6 +25,6 @@ type Requester interface {
 // Crawler uses Requester to collect Pages
 type Crawler interface {
 	Scan(ctx context.Context, url string, depth uint64)
-	ChanResult() <-chan crawler.CrawlResult
+	ChanResult() <-chan CrawlResult
 	IncreaseDepth()
 }
