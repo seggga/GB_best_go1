@@ -45,22 +45,24 @@ func main() {
 
 	srv.Run()
 
-	sigInt := make(chan os.Signal)        //Создаем канал для приема сигналов
-	signal.Notify(sigInt, syscall.SIGINT) //Подписываемся на сигнал SIGINT
+	sigInt := make(chan os.Signal) // Создаем канал для приема сигналов // gocritic
+	// Подписываемся на сигнал SIGINT // gocritic
+	signal.Notify(sigInt, syscall.SIGINT) //nolint:govet // syscall.SIGINT implements required interface
 
-	sigUsr := make(chan os.Signal)         //Создаем канал для приема сигналов
-	signal.Notify(sigUsr, syscall.SIGUSR1) //Подписываемся на сигнал SIGUSR1
+	sigUsr := make(chan os.Signal) // Создаем канал для приема сигналов // gocritic
+	// Подписываемся на сигнал SIGUSR1 // gocritic
+	signal.Notify(sigUsr, syscall.SIGUSR1) //nolint:govet // syscall.SIGUSR1 implements required interface
 
 	var next = true
 	for next {
 		select {
-		case <-ctx.Done(): //Если всё завершили - выходим
+		case <-ctx.Done(): // Если всё завершили - выходим // gocritic
 			next = false
 
 		// got INT signal
 		case <-sigInt:
 			log.Println("got INTERRUPT signal")
-			cancel() //Если пришёл сигнал SigInt - завершаем контекст
+			cancel() // Если пришёл сигнал SigInt - завершаем контекст // gocritic
 
 		// total timeout
 		case <-time.After(time.Second * time.Duration(cfg.CrawlTimeout)):
