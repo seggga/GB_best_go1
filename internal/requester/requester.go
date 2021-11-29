@@ -44,7 +44,7 @@ func (r requester) Get(ctx context.Context, url string) (domain.Page, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer body.Body.Close()
+		defer body.Body.Close() //nolint:errcheck // error don't have influence on business logic
 		page, err := page.NewPage(body.Body)
 		if err != nil {
 			return nil, err
