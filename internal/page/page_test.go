@@ -1,3 +1,4 @@
+//nolint:errcheck
 package page
 
 import (
@@ -8,8 +9,8 @@ import (
 )
 
 var (
-	// a URL to start test with
-	startURL = "https://telegram.org"
+	// // a URL to start test with
+	// startURL = "https://telegram.org"  // deadcode
 
 	// test webpage to parse and use in http.RoundTripper
 	testWebPage = `<!DOCTYPE html>

@@ -35,7 +35,7 @@ func NewCrawler(r domain.Requester, maxDepth uint64) (*crawler, error) {
 
 // Scan fills crawler's map with visited URLs and calls Get-method to scan webpages
 func (c *crawler) Scan(ctx context.Context, url string, depth uint64) {
-	//Проверяем то, что есть запас по глубине
+	// Проверяем то, что есть запас по глубине  // gocritic
 	c.mu.RLock()
 	maxDepthAchieved := depth > c.maxDepth
 	c.mu.RUnlock()
@@ -43,29 +43,29 @@ func (c *crawler) Scan(ctx context.Context, url string, depth uint64) {
 		return
 	}
 	c.mu.RLock()
-	_, ok := c.visited[url] //Проверяем, что мы ещё не смотрели эту страницу
+	_, ok := c.visited[url] // Проверяем, что мы ещё не смотрели эту страницу // gocritic
 	c.mu.RUnlock()
 	if ok {
 		return
 	}
 	select {
-	case <-ctx.Done(): //Если контекст завершен - прекращаем выполнение
+	case <-ctx.Done(): // Если контекст завершен - прекращаем выполнение // gocritic
 		return
 	default:
-		page, err := c.r.Get(ctx, url) //Запрашиваем страницу через Requester
+		page, err := c.r.Get(ctx, url) // Запрашиваем страницу через Requester // gocritic
 		if err != nil {
-			c.res <- domain.CrawlResult{Err: err} //Записываем ошибку в канал
+			c.res <- domain.CrawlResult{Err: err} // Записываем ошибку в канал  // gocritic
 			return
 		}
 		c.mu.Lock()
-		c.visited[url] = struct{}{} //Помечаем страницу просмотренной
+		c.visited[url] = struct{}{} // Помечаем страницу просмотренной // gocritic
 		c.mu.Unlock()
-		c.res <- domain.CrawlResult{ //Отправляем результаты в канал
+		c.res <- domain.CrawlResult{ // Отправляем результаты в канал // gocritic
 			Title: page.GetTitle(),
 			Url:   url,
 		}
 		for _, link := range page.GetLinks() {
-			go c.Scan(ctx, link, depth+1) //На все полученные ссылки запускаем новую рутину сборки
+			go c.Scan(ctx, link, depth+1) // На все полученные ссылки запускаем новую рутину сборки  // gocritic
 		}
 	}
 }
