@@ -27,8 +27,8 @@ func NewService(cfg domain.Config, cr domain.Crawler, cancel context.CancelFunc,
 }
 
 func (s *Service) Run() {
-	go s.crawler.Scan(s.ctx, s.config.URL, 1)              //Запускаем краулер в отдельной рутине
-	go processResult(s.ctx, s.cancel, s.crawler, s.config) //Обрабатываем результаты в отдельной рутине
+	go s.crawler.Scan(s.ctx, s.config.URL, 1)              // Запускаем краулер в отдельной рутине // gocritic
+	go processResult(s.ctx, s.cancel, s.crawler, s.config) // Обрабатываем результаты в отдельной рутине // gocritic
 }
 
 func (s *Service) IncreaseDepth() {
@@ -49,7 +49,7 @@ func processResult(ctx context.Context, cancel func(), cr domain.Crawler, cfg do
 				maxErrors--
 				log.Printf("crawler result return err: %s\n", msg.Err.Error())
 				if maxErrors <= 0 {
-					log.Println("Maximum number of errors occured.")
+					log.Println("Maximum number of errors occurred.")
 					cancel()
 					return
 				}
