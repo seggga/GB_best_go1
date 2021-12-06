@@ -18,4 +18,9 @@ test:
 lint:
 	golangci-lint run ./...
 
+# generate pre-commit hooks accouding to .pre-commit-config.yaml
+.PHONY: pre-commit
+pre-commit:
+	pre-commit install
+
 .DEFAULT_GOAL := run
