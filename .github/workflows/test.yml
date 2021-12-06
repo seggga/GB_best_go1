@@ -1,0 +1,21 @@
+# This workflow starts test procedure with verbose and coverage output
+
+name: TEST
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: 
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: install go
+        uses: actions/setup-go@v2
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: run test
+        run: go test -cover -v ./...
